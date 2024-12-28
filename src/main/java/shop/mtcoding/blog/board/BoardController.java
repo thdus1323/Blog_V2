@@ -14,32 +14,7 @@ import java.util.List;
 public class BoardController {
 
     private final BoardNativeRepository boardNativeRepository;
-
-    @PostMapping("/board/{id}/update")
-    public String update(@PathVariable Integer id, String title, String content, String username){
-        boardNativeRepository.updateById(id, title, content, username);
-        return "redirect:/board/"+id;
-    }
-
-    @GetMapping("/board/{id}/update-form")
-    public String updateForm(@PathVariable Integer id, HttpServletRequest request){
-        Board board = boardNativeRepository.findById(id);
-        request.setAttribute("board", board);
-
-        return "board/update-form";
-    }
-
-    @PostMapping("/board/{id}/delete")
-    public String delete(@PathVariable Integer id){
-        boardNativeRepository.deleteById(id);
-        return "redirect:/";
-    }
-
-    @PostMapping("/board/save")
-    public String save(String title, String content, String username){
-        boardNativeRepository.save(title, content, username);
-        return "redirect:/";
-    }
+    private final BoardRepository boardRepository;
 
     @GetMapping("/" )
     public String index(HttpServletRequest request) {
@@ -53,10 +28,38 @@ public class BoardController {
         return "board/save-form";
     }
 
-    @GetMapping("/board/{id}")
-    public String detail(@PathVariable Integer id, HttpServletRequest request) {
-        Board board = boardNativeRepository.findById(id);
-        request.setAttribute("board", board);
-        return "board/detail";
+    @PostMapping("/board/save")
+    public String save(BoardRequest.SaveDTO reqDTO){
+
+        boardRepository.save(reqDTO);
+        return "redirect:/";
     }
+
+    //게시글 상세보기
+    @GetMapping("/board/{id}")
+    public String detail(@PathVariable int id, HttpServletRequest request){
+        request.setAttribute("board", boardRepository.detail(id));
+        return "board/detail" ;
+    }
+
+    //게시글 삭제하기
+    @PostMapping("/board/{id}/delete")
+    public String delete(@PathVariable int id){
+        boardRepository.deleteById(id);
+        return "redirect:/";
+    }
+
+    //게시글 수정하기
+    @GetMapping("/board/{id}/update-form")
+    public String updateForm(@PathVariable int id, HttpServletRequest request){
+        request.setAttribute("board", boardRepository.detail(id));
+        return "board/update-form";
+    }
+
+    @PostMapping("/board/{id}/update")
+    public String update(@PathVariable int id, BoardRequest.UpdateDTO reqDTO){
+        boardRepository.update(reqDTO, id);
+        return "redirect:/board/" + id;
+    }
+
 }
